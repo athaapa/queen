@@ -5,5 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(rdtsc_benchmark src/tests/rdtsc_benchmark.cpp)
-target_compile_options(rdtsc_benchmark PRIVATE -O3 -Wall -Wextra -Wpedantic)
+add_executable(timing_benchmark src/tests/timing_benchmark.cpp)
+target_compile_options(timing_benchmark PRIVATE -O3 -Wall -Wextra -Wpedantic)
+target_compile_definitions(timing_benchmark PRIVATE _GNU_SOURCE)
