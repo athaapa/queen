@@ -16,6 +16,7 @@ int main() {
     }
 
     std::sort(samples.begin(), samples.end());
+    std::cout << "samples: " << samples.size() << '\n';
     std::cout << "p50: " << samples[SAMPLES / 2] << '\n';
     std::cout << "p90: " << samples[SAMPLES * 9 / 10] << '\n';
     std::cout << "p99: " << samples[SAMPLES * 99 / 100] << '\n';
