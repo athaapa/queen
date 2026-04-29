@@ -1,3 +1,7 @@
+/*
+    This benchmark measures the latency of rdtsc, lfence; rdtsc, and rdtscp.
+*/
+
 #include <algorithm>
 #include <cstdint>
 #include <immintrin.h>
@@ -18,8 +22,7 @@ static uint64_t read_rdtscp() {
     return __rdtscp(&aux);
 }
 
-template <typename ReadFn>
-static void run_benchmark(const char* label, ReadFn read_fn) {
+template <typename ReadFn> static void run_benchmark(const char* label, ReadFn read_fn) {
     std::vector<uint64_t> samples(static_cast<std::size_t>(SAMPLES));
     for (int i = 0; i < SAMPLES; ++i) {
         const uint64_t start = read_fn();
