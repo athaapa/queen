@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
-project(lofeed LANGUAGES CXX)
+project(queen LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+target_compile_options(rdtsc_benchmark PRIVATE -O3 -Wall -Wextra -Wpedantic)
+add_executable(rdtsc_benchmark src/tests/rdtsc_benchmark.cpp)
