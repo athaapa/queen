@@ -20,6 +20,7 @@ add_executable(queen_kernel
     src/kernel/main.cpp
     src/kernel/serial.cpp
     src/kernel/panic.cpp
+    src/kernel/limine_requests.cpp
 )
 
 set_target_properties(queen_kernel PROPERTIES
