@@ -1,5 +1,5 @@
 #include "serial.hpp"
-#include <cstdint>
+#include <stdint.h>
 
 constexpr uint16_t COM1 = 0x3F8;
 
@@ -33,5 +33,16 @@ void queen::serial::write_char(char c) {
 void queen::serial::write(const char* s) {
     while (*s != '\0') {
         write_char(*s++);
+    }
+}
+
+void queen::serial::write_hex(uint64_t value) {
+    write("0x");
+    int i = 0;
+    while (i < 64) {
+        const uint8_t byte = static_cast<uint8_t>((value >> i) & 0xFF);
+        const char c = byte < 10 ? byte + '0' : ('a' + (byte - 10));
+        write_char(c);
+        i += 4;
     }
 }
