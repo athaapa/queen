@@ -15,3 +15,36 @@ add_executable(spsc_baseline src/tests/spsc_baseline.cpp)
 target_compile_options(spsc_baseline PRIVATE -O3 -Wall -Wextra -Wpedantic)
 target_compile_definitions(spsc_baseline PRIVATE _GNU_SOURCE)
 target_link_libraries(spsc_baseline PRIVATE Threads::Threads)
+
+add_executable(queen_kernel
+    src/kernel/main.cpp
+    src/kernel/serial.cpp
+    src/kernel/panic.cpp
+)
+
+set_target_properties(queen_kernel PROPERTIES
+    OUTPUT_NAME queen
+    SUFFIX ".elf"
+)
+
+target_compile_options(queen_kernel PRIVATE
+    -ffreestanding
+    -fno-exceptions
+    -fno-rtti
+    -fno-stack-protector
+    -fno-pic
+    -fno-pie
+    -mno-red-zone
+    -Wall
+    -Wextra
+    -Wpedantic
+    -mcmodel=kernel
+)
+
+target_link_options(queen_kernel PRIVATE
+    -nostdlib
+    -no-pie
+    -static
+    -T ${CMAKE_SOURCE_DIR}/linker.ld
+    -Wl,-z,max-page-size=0x1000
+)
