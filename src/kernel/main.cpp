@@ -10,6 +10,7 @@ extern "C" void kernel_main() {
 
     uint64_t delta = end - start;
     queen::serial::write_hex(delta);
+    queen::serial::write("\n");
 
     for (;;) {
         asm volatile("hlt");
