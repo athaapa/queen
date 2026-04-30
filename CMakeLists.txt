@@ -39,6 +39,7 @@ target_compile_options(queen_kernel PRIVATE
     -Wall
     -Wextra
     -Wpedantic
+    -mcmodel=kernel
 )
 
 target_link_options(queen_kernel PRIVATE

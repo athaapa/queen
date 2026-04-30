@@ -2,7 +2,8 @@ ENTRY(kernel_main)
 
 SECTIONS
 {
-    . = 1M;
+    
+    . = 0xffffffff80000000;
 
     .limine_requests : ALIGN(4K)
     {
