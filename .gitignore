@@ -3,3 +3,4 @@ build/
 .cache/
 misc/
 .clangd
+third_party/
