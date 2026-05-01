@@ -38,11 +38,11 @@ void queen::serial::write(const char* s) {
 
 void queen::serial::write_hex(uint64_t value) {
     write("0x");
-    int i = 0;
-    while (i < 64) {
-        const uint8_t byte = static_cast<uint8_t>((value >> i) & 0xFF);
-        const char c = byte < 10 ? byte + '0' : ('a' + (byte - 10));
+    int i = 60;
+    while (i >= 0) {
+        uint8_t byte = (value >> i) & 0xF;
+        const char c = (byte < 10) ? (byte + '0') : ((byte - 10) + 'a');
         write_char(c);
-        i += 4;
+        i -= 4;
     }
 }
