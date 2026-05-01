@@ -1,29 +1,44 @@
 cmake_minimum_required(VERSION 3.14)
-project(queen LANGUAGES CXX)
+
+# Force cross-compilation settings before the project() call
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
+set(CMAKE_C_COMPILER x86_64-elf-gcc)
+set(CMAKE_CXX_COMPILER x86_64-elf-g++)
+set(CMAKE_ASM_COMPILER x86_64-elf-gcc)
+set(CMAKE_OSX_ARCHITECTURES "")
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
+
+project(queen LANGUAGES CXX ASM)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Threads REQUIRED)
-
 find_program(XORRISO_EXECUTABLE xorriso)
 find_program(QEMU_SYSTEM_X86_64_EXECUTABLE qemu-system-x86_64)
 
-add_executable(timing_benchmark src/tests/timing_benchmark.cpp)
-target_compile_options(timing_benchmark PRIVATE -O3 -Wall -Wextra -Wpedantic)
-target_compile_definitions(timing_benchmark PRIVATE _GNU_SOURCE)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
+    find_package(Threads REQUIRED)
 
-add_executable(spsc_baseline src/tests/spsc_baseline.cpp)
-target_compile_options(spsc_baseline PRIVATE -O3 -Wall -Wextra -Wpedantic)
-target_compile_definitions(spsc_baseline PRIVATE _GNU_SOURCE)
-target_link_libraries(spsc_baseline PRIVATE Threads::Threads)
+    add_executable(timing_benchmark src/tests/timing_benchmark.cpp)
+    target_compile_options(timing_benchmark PRIVATE -O3 -Wall -Wextra -Wpedantic)
+    target_compile_definitions(timing_benchmark PRIVATE _GNU_SOURCE)
+
+    add_executable(spsc_baseline src/tests/spsc_baseline.cpp)
+    target_compile_options(spsc_baseline PRIVATE -O3 -Wall -Wextra -Wpedantic)
+    target_compile_definitions(spsc_baseline PRIVATE _GNU_SOURCE)
+    target_link_libraries(spsc_baseline PRIVATE Threads::Threads)
+endif()
 
 add_executable(queen_kernel
     src/kernel/main.cpp
     src/kernel/serial.cpp
     src/kernel/panic.cpp
     src/kernel/limine_requests.cpp
+    src/kernel/gdt.cpp
+    src/kernel/gdt_flush.S
 )
 
 set_target_properties(queen_kernel PROPERTIES
