@@ -11,6 +11,8 @@ extern "C" char kernel_end[];
 
 constexpr uint64_t FRAME_SIZE_BYTES = 0x1000; // 4KB
 
+static bool boot_allocations_sealed = false;
+
 uint64_t next_free_address = 0;
 uint64_t memory_pool_base = 0;
 uint64_t memory_pool_end = 0;
@@ -76,14 +78,20 @@ void queen::memory::dump_map() {
     queen::serial::write("\n");
 }
 
+void queen::memory::seal_boot_allocations() { boot_allocations_sealed = true; }
+
 uint64_t queen::memory::pool_base() { return memory_pool_base; }
 
 uint64_t queen::memory::pool_end() { return memory_pool_end; }
 
 uint64_t queen::memory::allocate_frame() {
+    if (boot_allocations_sealed) {
+        panic("frame allocation after boot is forbidden");
+    }
+
     uint64_t temp = next_free_address;
     next_free_address += FRAME_SIZE_BYTES;
-    if (next_free_address >= memory_pool_end) {
+    if (next_free_address > memory_pool_end) {
         panic("You ran out of memory!");
     }
 

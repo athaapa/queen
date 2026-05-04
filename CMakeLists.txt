@@ -48,6 +48,7 @@ add_executable(queen_kernel
     src/kernel/switch_stack.S
     src/kernel/load_cr3.S
     src/kernel/mathutil.cpp
+    src/kernel/kernel_main.cpp
 )
 
 set_target_properties(queen_kernel PROPERTIES

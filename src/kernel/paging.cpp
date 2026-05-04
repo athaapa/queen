@@ -1,4 +1,5 @@
 #include "paging.hpp"
+#include "kernel_main.hpp"
 #include "limine.h"
 #include "mathutil.hpp"
 #include "memory.hpp"
@@ -35,15 +36,9 @@ static void print_range(const char* name, uint64_t virt_start, uint64_t virt_end
     uint64_t phys_start, uint64_t phys_end);
 
 extern "C" void kernel_after_paging_switch(uint64_t pml4_phys) {
-    queen::serial::write_line("on queen stack");
-    queen::serial::write_line("before cr3");
     load_cr3(pml4_phys);
-    queen::serial::write_line("after cr3");
     run_post_switch_self_test(pml4_phys);
-
-    for (;;) {
-        asm volatile("hlt");
-    }
+    queen::kernel_runtime_main();
 }
 
 void queen::paging::init() {
@@ -180,9 +175,7 @@ static void print_range(const char* name, uint64_t virt_start, uint64_t virt_end
     queen::serial::write(")\n");
 }
 
-static uint64_t kernel_stack_top() {
-    return reinterpret_cast<uint64_t>(kernel_stack + STACK_SIZE);
-}
+static uint64_t kernel_stack_top() { return reinterpret_cast<uint64_t>(kernel_stack + STACK_SIZE); }
 
 static uint64_t current_cr3() {
     uint64_t value = 0;

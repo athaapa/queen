@@ -18,7 +18,6 @@ extern "C" void kernel_main() {
     queen::paging::init();
 
     queen::serial::write("queen booted\n");
-
     queen::paging::activate();
 
     for (;;) {
