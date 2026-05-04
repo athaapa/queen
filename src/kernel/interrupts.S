@@ -12,10 +12,10 @@ isr0:
 
 // Tick
 isr32:
-    cli // Q: Why is this necessary? 
+    cli
     call tick
-    mov $0x20, %al // Q: Why is this line necessary?
-    outb %al, $0x20 // Q: Why is this line necessary?
+    mov $0x20, %al
+    outb %al, $0x20
     iretq
 
 // Page fault
@@ -25,4 +25,3 @@ isr14:
     mov %cr2, %rdi
     call page_fault_handler
     iretq
-

@@ -15,7 +15,6 @@ static inline uint8_t inb(uint16_t port) {
     return value;
 }
 
-// TODO: Clean this up
 void queen::pic::init() {
     // Send the initialization command to both PICs
     outb(0x20, 0x11);

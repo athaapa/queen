@@ -37,6 +37,7 @@ add_executable(queen_kernel
     src/kernel/serial.cpp
     src/kernel/panic.cpp
     src/kernel/limine_requests.cpp
+    src/kernel/exceptions.cpp
     src/kernel/gdt.cpp
     src/kernel/gdt_flush.S
     src/kernel/idt.cpp

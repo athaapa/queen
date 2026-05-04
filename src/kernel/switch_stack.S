@@ -4,7 +4,7 @@
 switch_stack:
     mov %rdi, %rsp
     mov %rsi, %rdi
-    call paging_after_stack_switch
+    call kernel_after_paging_switch
 
 .hang:
     hlt

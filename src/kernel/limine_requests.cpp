@@ -1,6 +1,5 @@
 #include "limine.h"
 
-// Q: What does this file even do?
 __attribute__((used,
     section(".limine_requests_start"))) static volatile uint64_t limine_requests_start_marker[]
     = LIMINE_REQUESTS_START_MARKER;

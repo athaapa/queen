@@ -76,9 +76,9 @@ void queen::memory::dump_map() {
     queen::serial::write("\n");
 }
 
-uint64_t queen::memory::get_base() { return memory_pool_base; }
+uint64_t queen::memory::pool_base() { return memory_pool_base; }
 
-uint64_t queen::memory::get_end() { return memory_pool_end; }
+uint64_t queen::memory::pool_end() { return memory_pool_end; }
 
 uint64_t queen::memory::allocate_frame() {
     uint64_t temp = next_free_address;
@@ -94,7 +94,7 @@ static void verify_pool(uint64_t base, uint64_t length, uint64_t type) {
     if (type != 0) {
         queen::panic("tried to allocate unusable memory");
     }
-    if ((base & (FRAME_SIZE_BYTES - 1)) != 0) { // Is page-aligned?
+    if ((base & (FRAME_SIZE_BYTES - 1)) != 0) {
         queen::panic("base is not page-aligned");
     }
 

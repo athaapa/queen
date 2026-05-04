@@ -7,7 +7,7 @@ namespace queen {
         void dump_map();
         uint64_t allocate_frame();
 
-        uint64_t get_base();
-        uint64_t get_end();
+        uint64_t pool_base();
+        uint64_t pool_end();
     }
 }

@@ -11,42 +11,10 @@ extern "C" char kernel_start[];
 extern "C" char kernel_end[];
 extern "C" void switch_stack(uint64_t stack_top, uint64_t pml4_phys);
 extern "C" void load_cr3(uint64_t pml4_phys);
-extern "C" void paging_after_stack_switch(uint64_t pml4_phys) {
-    queen::serial::write_line("on queen stack");
-    queen::serial::write_line("before cr3");
-    load_cr3(pml4_phys);
-    queen::serial::write_line("after cr3");
-
-    uint64_t cr3_val;
-    asm("movq %%cr3, %0" : "=r"(cr3_val));
-    if (cr3_val == queen::paging::get_pml4_phys()) {
-        queen::serial::write_line("cr3 equals pml4_phys");
-    } else {
-        queen::serial::write_line("cr3 does NOT equal pml4_phys");
-    }
-
-    uint64_t phys = queen::memory::allocate_frame();
-    uint64_t* virt = (uint64_t*)(phys + queen::paging::get_hhdm_offset());
-    *virt = 0x1234;
-
-    uint64_t val = *virt;
-    queen::serial::write_hex(val);
-    queen::serial::write("\n");
-
-    for (;;) {
-        asm volatile("hlt");
-    }
-}
-extern "C" void page_fault_handler(uint64_t fault_addr, uint64_t error_code) {
-    queen::serial::write_line("PAGE FAULT");
-    queen::serial::write("fault_addr: ");
-    queen::serial::write_hex(fault_addr);
-    queen::serial::write("\n");
-    queen::serial::write("error_code: ");
-    queen::serial::write_hex(error_code);
-    queen::serial::write("\n");
-}
-
+extern "C" void kernel_after_paging_switch(uint64_t pml4_phys);
+static uint64_t current_cr3();
+static uint64_t kernel_stack_top();
+static void run_post_switch_self_test(uint64_t active_pml4_phys);
 constexpr uint64_t STACK_SIZE = 16384;
 constexpr uint64_t PAGE_SIZE = 4096;
 
@@ -66,9 +34,20 @@ alignas(16) static uint8_t kernel_stack[STACK_SIZE];
 static void print_range(const char* name, uint64_t virt_start, uint64_t virt_end,
     uint64_t phys_start, uint64_t phys_end);
 
+extern "C" void kernel_after_paging_switch(uint64_t pml4_phys) {
+    queen::serial::write_line("on queen stack");
+    queen::serial::write_line("before cr3");
+    load_cr3(pml4_phys);
+    queen::serial::write_line("after cr3");
+    run_post_switch_self_test(pml4_phys);
+
+    for (;;) {
+        asm volatile("hlt");
+    }
+}
+
 void queen::paging::init() {
-    pml4_phys
-        = queen::memory::allocate_frame(); // TODO: Make sure the queen::memory dependency is clear
+    pml4_phys = queen::memory::allocate_frame();
 
     hhdm_offset = hhdm_request.response->offset;
     pml4_virt = (uint64_t*)(pml4_phys + hhdm_offset);
@@ -83,8 +62,8 @@ void queen::paging::init() {
     uint64_t phys_base = address_request.response->physical_base;
     uint64_t virt_base = address_request.response->virtual_base;
 
-    uint64_t mem_base = queen::memory::get_base();
-    uint64_t mem_end = queen::memory::get_end();
+    uint64_t mem_base = queen::memory::pool_base();
+    uint64_t mem_end = queen::memory::pool_end();
 
     uint64_t kernel_virt_start = queen::mathutil::align_down(start, PAGE_SIZE);
     uint64_t kernel_virt_end = queen::mathutil::align_up(end, PAGE_SIZE);
@@ -137,10 +116,9 @@ void queen::paging::init() {
     print_range("hhdm_pool_map", hhdm_virt_start, hhdm_virt_end, mem_base, mem_end);
 }
 
-uint64_t queen::paging::get_hhdm_offset() { return hhdm_offset; }
+void queen::paging::activate() { switch_stack(kernel_stack_top(), pml4_phys); }
 
 void queen::paging::map_page(uint64_t virtual_address, uint64_t physical_address) {
-    // uint16_t offset = virtual_address & OFFSET_MASK;
     uint16_t pt_index = (virtual_address >> 12) & INDEX_MASK;
     uint16_t pd_index = (virtual_address >> 21) & INDEX_MASK;
     uint16_t pdpt_index = (virtual_address >> 30) & INDEX_MASK;
@@ -188,12 +166,6 @@ void queen::paging::map_page(uint64_t virtual_address, uint64_t physical_address
     pt_virt[pt_index] = physical_address | (PRESENT_FLAG | RW_FLAG);
 }
 
-uint64_t queen::paging::get_kernel_stack_top() {
-    return reinterpret_cast<uint64_t>(kernel_stack + STACK_SIZE);
-}
-
-uint64_t queen::paging::get_pml4_phys() { return pml4_phys; }
-
 static void print_range(const char* name, uint64_t virt_start, uint64_t virt_end,
     uint64_t phys_start, uint64_t phys_end) {
     queen::serial::write(name);
@@ -206,4 +178,30 @@ static void print_range(const char* name, uint64_t virt_start, uint64_t virt_end
     queen::serial::write(", ");
     queen::serial::write_hex(phys_end);
     queen::serial::write(")\n");
+}
+
+static uint64_t kernel_stack_top() {
+    return reinterpret_cast<uint64_t>(kernel_stack + STACK_SIZE);
+}
+
+static uint64_t current_cr3() {
+    uint64_t value = 0;
+    asm("movq %%cr3, %0" : "=r"(value));
+    return value;
+}
+
+static void run_post_switch_self_test(uint64_t active_pml4_phys) {
+    if (current_cr3() == active_pml4_phys) {
+        queen::serial::write_line("cr3 equals pml4_phys");
+    } else {
+        queen::serial::write_line("cr3 does NOT equal pml4_phys");
+    }
+
+    uint64_t phys = queen::memory::allocate_frame();
+    uint64_t* virt = (uint64_t*)(phys + hhdm_offset);
+    *virt = 0x1234;
+
+    uint64_t val = *virt;
+    queen::serial::write_hex(val);
+    queen::serial::write("\n");
 }

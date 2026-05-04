@@ -9,10 +9,6 @@
 
 #include <stdint.h>
 
-extern "C" void panic() { queen::serial::write("\nFATAL: DIVIDE BY ZERO EXCEPTION\n"); }
-extern "C" void tick() { queen::serial::write("tick\n"); }
-extern "C" void switch_stack(uint64_t stack_top, uint64_t pml4_phys);
-
 extern "C" void kernel_main() {
     queen::serial::init();
     queen::gdt::init();
@@ -23,8 +19,7 @@ extern "C" void kernel_main() {
 
     queen::serial::write("queen booted\n");
 
-    // asm volatile("sti"); // Q: What does this do and why is it necessary?
-    switch_stack(queen::paging::get_kernel_stack_top(), queen::paging::get_pml4_phys());
+    queen::paging::activate();
 
     for (;;) {
         asm volatile("hlt");
