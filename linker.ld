@@ -4,6 +4,7 @@ SECTIONS
 {
     
     . = 0xffffffff80000000;
+    kernel_start = .;
 
     .limine_requests : ALIGN(4K)
     {
@@ -32,4 +33,6 @@ SECTIONS
         *(COMMON)
         *(.bss .bss.*)
     }
+
+    kernel_end = .;
 }

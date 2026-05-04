@@ -1,5 +1,6 @@
 #include "limine.h"
 
+// Q: What does this file even do?
 __attribute__((used,
     section(".limine_requests_start"))) static volatile uint64_t limine_requests_start_marker[]
     = LIMINE_REQUESTS_START_MARKER;
@@ -10,3 +11,14 @@ __attribute__((used, section(".limine_requests"))) static volatile uint64_t limi
 __attribute__((
     used, section(".limine_requests_end"))) static volatile uint64_t limine_requests_end_marker[]
     = LIMINE_REQUESTS_END_MARKER;
+
+__attribute__((
+    used, section(".limine_requests"))) volatile struct limine_memmap_request memmap_request
+    = { .id = LIMINE_MEMMAP_REQUEST_ID, .revision = 0, .response = nullptr };
+
+__attribute__((used, section(".limine_requests"))) volatile struct limine_hhdm_request hhdm_request
+    = { .id = LIMINE_HHDM_REQUEST_ID, .revision = 0, .response = nullptr };
+
+__attribute__((used,
+    section(".limine_requests"))) volatile struct limine_executable_address_request address_request
+    = { .id = LIMINE_EXECUTABLE_ADDRESS_REQUEST_ID, .revision = 0, .response = nullptr };

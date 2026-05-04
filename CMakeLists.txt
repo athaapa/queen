@@ -12,7 +12,7 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 
 project(queen LANGUAGES CXX ASM)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -39,6 +39,14 @@ add_executable(queen_kernel
     src/kernel/limine_requests.cpp
     src/kernel/gdt.cpp
     src/kernel/gdt_flush.S
+    src/kernel/idt.cpp
+    src/kernel/interrupts.S
+    src/kernel/pic.cpp
+    src/kernel/memory.cpp
+    src/kernel/paging.cpp
+    src/kernel/switch_stack.S
+    src/kernel/load_cr3.S
+    src/kernel/mathutil.cpp
 )
 
 set_target_properties(queen_kernel PROPERTIES

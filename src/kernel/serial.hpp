@@ -8,6 +8,9 @@ namespace queen {
         // Writes a string to COM1
         void write(const char* s);
 
+        // Writes a string to COM1
+        void write_line(const char* s);
+
         // Writes a character to COM1
         void write_char(char c);
 

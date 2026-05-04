@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 namespace queen {
+    // Why is this inline?
     inline uint64_t read_tsc() {
         uint64_t value = 0;
         asm volatile("rdtsc");
