@@ -1,6 +1,5 @@
 build/
 .clang-format
 .cache/
-misc/
 .clangd
 third_party/
