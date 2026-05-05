@@ -55,3 +55,26 @@ void queen::serial::write_hex(uint64_t value) {
         i -= 4;
     }
 }
+
+void queen::serial::write_decimal(uint64_t value) {
+    if (value == 0) {
+        write("0");
+        return;
+    }
+
+    uint64_t temp = value;
+    uint64_t divisor = 1;
+
+    while (temp >= 10) {
+        temp /= 10;
+        divisor *= 10;
+    }
+
+    while (divisor > 0) {
+        uint64_t digit = value / divisor;
+        write_char(digit + '0');
+
+        value %= divisor;
+        divisor /= 10;
+    }
+}

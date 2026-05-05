@@ -2,18 +2,21 @@
 #include <stdint.h>
 
 namespace queen {
-    // Why is this inline?
     inline uint64_t read_tsc() {
-        uint64_t value = 0;
-        asm volatile("rdtsc");
+        uint32_t lo = 0, hi = 0;
+        asm volatile("rdtsc" : "=a"(lo), "=d"(hi) : : "memory");
 
-        uint32_t eax_value, edx_value;
-        asm volatile("movl %%eax, %0" : "=r"(eax_value));
-        asm volatile("movl %%edx, %0" : "=r"(edx_value));
+        return (static_cast<uint64_t>(hi) << 32) | lo;
+    }
 
-        value |= eax_value;
-        value |= (edx_value << 31);
+    inline uint64_t read_tsc_ordered() {
+        uint32_t lo = 0, hi = 0;
+        asm volatile("lfence\n\t"
+                     "rdtsc"
+            : "=a"(lo), "=d"(hi)
+            :
+            : "memory");
 
-        return value;
+        return (static_cast<uint64_t>(hi) << 32) | lo;
     }
 }
