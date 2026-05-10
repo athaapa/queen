@@ -21,3 +21,7 @@ __attribute__((used, section(".limine_requests"))) volatile struct limine_hhdm_r
 __attribute__((used,
     section(".limine_requests"))) volatile struct limine_executable_address_request address_request
     = { .id = LIMINE_EXECUTABLE_ADDRESS_REQUEST_ID, .revision = 0, .response = nullptr };
+
+__attribute__((used,
+    section(".limine_requests"))) volatile struct limine_framebuffer_request framebuffer_request
+    = { .id = LIMINE_FRAMEBUFFER_REQUEST_ID, .revision = 0, .response = nullptr };

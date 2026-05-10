@@ -1,4 +1,5 @@
 #include "benchmark.hpp"
+#include "framebuffer.hpp"
 #include "mathutil.hpp"
 #include "serial.hpp"
 #include "time.hpp"
@@ -15,6 +16,9 @@ struct Event {
 
 static uint64_t handle_event(const Event& event);
 static void print_latency_report(const char* name, uint64_t checksum);
+static void write_report_label(const char* label);
+static void write_report_value(uint64_t value);
+static void write_report_newline();
 static void swap(uint64_t& a, uint64_t& b);
 static void sort_latencies();
 
@@ -60,31 +64,47 @@ static void print_latency_report(const char* name, uint64_t checksum) {
 
     sort_latencies();
 
-    queen::serial::write(name);
-    queen::serial::write("\n");
-    queen::serial::write("p50: ");
-    queen::serial::write_decimal(latencies[N / 2]);
-    queen::serial::write("\n");
+    write_report_label(name);
+    write_report_newline();
 
-    queen::serial::write("p99: ");
-    queen::serial::write_decimal(latencies[N * 99 / 100]);
-    queen::serial::write("\n");
+    write_report_label("p50: ");
+    write_report_value(latencies[N / 2]);
+    write_report_newline();
 
-    queen::serial::write("p999: ");
-    queen::serial::write_decimal(latencies[N * 999 / 1000]);
-    queen::serial::write("\n");
+    write_report_label("p99: ");
+    write_report_value(latencies[N * 99 / 100]);
+    write_report_newline();
 
-    queen::serial::write("max: ");
-    queen::serial::write_decimal(mx);
-    queen::serial::write("\n");
+    write_report_label("p999: ");
+    write_report_value(latencies[N * 999 / 1000]);
+    write_report_newline();
 
-    queen::serial::write("min: ");
-    queen::serial::write_decimal(mn);
-    queen::serial::write("\n");
+    write_report_label("max: ");
+    write_report_value(mx);
+    write_report_newline();
 
-    queen::serial::write("checksum: ");
-    queen::serial::write_decimal(checksum);
+    write_report_label("min: ");
+    write_report_value(mn);
+    write_report_newline();
+
+    write_report_label("checksum: ");
+    write_report_value(checksum);
+    write_report_newline();
+}
+
+static void write_report_label(const char* label) {
+    queen::serial::write(label);
+    queen::framebuffer::write(label);
+}
+
+static void write_report_value(uint64_t value) {
+    queen::serial::write_decimal(value);
+    queen::framebuffer::write_decimal(value);
+}
+
+static void write_report_newline() {
     queen::serial::write("\n");
+    queen::framebuffer::write("\n");
 }
 
 static void swap(uint64_t& a, uint64_t& b) {

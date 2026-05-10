@@ -51,6 +51,7 @@ add_executable(queen_kernel
     src/kernel/kernel_main.cpp
     src/kernel/benchmark.cpp
     src/kernel/mathutil.cpp
+    src/kernel/framebuffer.cpp
 )
 
 set_target_properties(queen_kernel PROPERTIES
@@ -133,6 +134,18 @@ if(QEMU_SYSTEM_X86_64_EXECUTABLE AND XORRISO_EXECUTABLE)
         DEPENDS queen_iso
         USES_TERMINAL
         COMMENT "Running Queen in QEMU"
+        VERBATIM
+    )
+
+    add_custom_target(run_queen_gui
+        COMMAND ${QEMU_SYSTEM_X86_64_EXECUTABLE}
+            -cdrom ${QUEEN_ISO}
+            -serial stdio
+            -no-reboot
+            -no-shutdown
+        DEPENDS queen_iso
+        USES_TERMINAL
+        COMMENT "Running Queen in QEMU with framebuffer display"
         VERBATIM
     )
 elseif(NOT QEMU_SYSTEM_X86_64_EXECUTABLE)

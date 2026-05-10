@@ -1,13 +1,10 @@
+#include "framebuffer.hpp"
 #include "gdt.hpp"
 #include "idt.hpp"
-#include "limine.h"
 #include "memory.hpp"
 #include "paging.hpp"
 #include "pic.hpp"
 #include "serial.hpp"
-#include "time.hpp"
-
-#include <stdint.h>
 
 extern "C" void kernel_main() {
     queen::serial::init();
@@ -15,6 +12,7 @@ extern "C" void kernel_main() {
     queen::idt::init();
     queen::pic::init();
     queen::memory::init();
+    queen::framebuffer::init();
     queen::paging::init();
 
     queen::serial::write("queen booted\n");

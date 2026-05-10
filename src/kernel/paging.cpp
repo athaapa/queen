@@ -1,8 +1,10 @@
 #include "paging.hpp"
+#include "framebuffer.hpp"
 #include "kernel_main.hpp"
 #include "limine.h"
 #include "mathutil.hpp"
 #include "memory.hpp"
+#include "panic.hpp"
 #include "serial.hpp"
 #include <stdint.h>
 
@@ -79,6 +81,21 @@ void queen::paging::init() {
     for (uint64_t phys_addr = mem_base; phys_addr < mem_end; phys_addr += PAGE_SIZE) {
         uint64_t virt_addr = phys_addr + hhdm_offset;
         map_page(virt_addr, phys_addr);
+    }
+
+    if (queen::framebuffer::available()) {
+        uint64_t fb_virt_start = mathutil::align_down(framebuffer::virtual_base(), PAGE_SIZE);
+        uint64_t fb_virt_end = mathutil::align_up(
+            framebuffer::virtual_base() + framebuffer::size_bytes(), PAGE_SIZE);
+
+        if (fb_virt_start < hhdm_offset) {
+            queen::panic("framebuffer not in HHDM");
+        }
+
+        for (uint64_t virt = fb_virt_start; virt < fb_virt_end; virt += PAGE_SIZE) {
+            uint64_t phys = virt - hhdm_offset;
+            map_page(virt, phys);
+        }
     }
 
     queen::serial::write("paging init\n");
