@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 constexpr int N = 4096;
+constexpr int BATCHES[] = { 1, 4, 8, 16, 32, 64 };
 
 static uint64_t latencies[N];
 
@@ -14,10 +15,9 @@ struct Event {
     uint64_t value;
 };
 
-constexpr int BATCH = 32;
-
 static uint64_t handle_event(const Event& event);
-static void print_latency_report(const char* name, uint64_t checksum);
+static void run_event_loop_batch(const Event events[N], int batch);
+static void print_latency_report(const char* name, int batch, uint64_t checksum);
 static void write_report_label(const char* label);
 static void write_report_value(uint64_t value);
 static void write_report_newline();
@@ -31,7 +31,7 @@ void queen::benchmark::run_tsc_overhead() {
         latencies[i] = end - start;
     }
 
-    print_latency_report("tsc_overhead", 0);
+    print_latency_report("tsc_overhead", 0, 0);
 }
 
 void queen::benchmark::run_event_loop() {
@@ -41,24 +41,30 @@ void queen::benchmark::run_event_loop() {
         events[i].value = i % 67;
     }
 
+    for (uint64_t i = 0; i < sizeof(BATCHES) / sizeof(BATCHES[0]); i++) {
+        run_event_loop_batch(events, BATCHES[i]);
+    }
+}
+
+static void run_event_loop_batch(const Event events[N], int batch) {
     uint64_t checksum = 0;
     for (int i = 0; i < N; i++) {
         uint64_t start = queen::read_tsc_ordered();
-        for (int j = 0; j < BATCH; j++) {
-            uint64_t x = handle_event(events[(i * BATCH + j) % N]);
+        for (int j = 0; j < batch; j++) {
+            uint64_t x = handle_event(events[(i * batch + j) % N]);
             checksum += x;
         }
         uint64_t end = queen::read_tsc_ordered();
 
-        latencies[i] = (end - start) / BATCH;
+        latencies[i] = (end - start) / batch;
     }
 
-    print_latency_report("event_loop", checksum);
+    print_latency_report("event_loop", batch, checksum);
 }
 
 static uint64_t handle_event(const Event& event) { return event.id + 3 * event.value; }
 
-static void print_latency_report(const char* name, uint64_t checksum) {
+static void print_latency_report(const char* name, int batch, uint64_t checksum) {
     uint64_t mx = 0;
     uint64_t mn = UINT64_MAX;
     for (int i = 0; i < N; i++) {
@@ -70,6 +76,12 @@ static void print_latency_report(const char* name, uint64_t checksum) {
 
     write_report_label(name);
     write_report_newline();
+
+    if (batch != 0) {
+        write_report_label("batch: ");
+        write_report_value(batch);
+        write_report_newline();
+    }
 
     write_report_label("p50: ");
     write_report_value(latencies[N / 2]);
