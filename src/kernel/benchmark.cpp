@@ -14,6 +14,8 @@ struct Event {
     uint64_t value;
 };
 
+constexpr int BATCH = 32;
+
 static uint64_t handle_event(const Event& event);
 static void print_latency_report(const char* name, uint64_t checksum);
 static void write_report_label(const char* label);
@@ -42,11 +44,13 @@ void queen::benchmark::run_event_loop() {
     uint64_t checksum = 0;
     for (int i = 0; i < N; i++) {
         uint64_t start = queen::read_tsc_ordered();
-        uint64_t x = handle_event(events[i]);
-        checksum += x;
+        for (int j = 0; j < BATCH; j++) {
+            uint64_t x = handle_event(events[(i * BATCH + j) % N]);
+            checksum += x;
+        }
         uint64_t end = queen::read_tsc_ordered();
 
-        latencies[i] = (end - start);
+        latencies[i] = (end - start) / BATCH;
     }
 
     print_latency_report("event_loop", checksum);
