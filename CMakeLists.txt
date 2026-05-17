@@ -50,6 +50,7 @@ add_executable(queen_kernel
     src/kernel/mathutil.cpp
     src/kernel/kernel_main.cpp
     src/kernel/benchmark.cpp
+    src/kernel/event_loop.cpp
     src/kernel/mathutil.cpp
     src/kernel/framebuffer.cpp
 )

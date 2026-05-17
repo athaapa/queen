@@ -1,6 +1,7 @@
 #include "benchmark.hpp"
 #include "framebuffer.hpp"
 #include "mathutil.hpp"
+#include "program.hpp"
 #include "serial.hpp"
 #include "time.hpp"
 #include <stdint.h>
@@ -15,14 +16,17 @@ struct Event {
     uint64_t value;
 };
 
-static uint64_t handle_event(const Event& event);
-static void run_event_loop_batch(const Event events[N], int batch);
+extern "C" uint64_t queen_event_loop_entry(uint64_t id, uint64_t value);
+
+static void run_event_loop_batch(
+    const char* name, queen::program::Entry entry, const Event events[N], int batch);
 static void print_latency_report(const char* name, int batch, uint64_t checksum);
 static void write_report_label(const char* label);
 static void write_report_value(uint64_t value);
 static void write_report_newline();
 static void swap(uint64_t& a, uint64_t& b);
 static void sort_latencies();
+static uint64_t kernel_embedded_entry(uint64_t id, uint64_t value);
 
 void queen::benchmark::run_tsc_overhead() {
     for (int i = 0; i < N; i++) {
@@ -42,16 +46,19 @@ void queen::benchmark::run_event_loop() {
     }
 
     for (uint64_t i = 0; i < sizeof(BATCHES) / sizeof(BATCHES[0]); i++) {
-        run_event_loop_batch(events, BATCHES[i]);
+        run_event_loop_batch("kernel_embedded_entry", kernel_embedded_entry, events, BATCHES[i]);
+        run_event_loop_batch("linked_program", queen_event_loop_entry, events, BATCHES[i]);
     }
 }
 
-static void run_event_loop_batch(const Event events[N], int batch) {
+static void run_event_loop_batch(
+    const char* name, queen::program::Entry entry, const Event events[N], int batch) {
     uint64_t checksum = 0;
     for (int i = 0; i < N; i++) {
         uint64_t start = queen::read_tsc_ordered();
         for (int j = 0; j < batch; j++) {
-            uint64_t x = handle_event(events[(i * batch + j) % N]);
+            const Event& event = events[(i * batch + j) % N];
+            uint64_t x = entry(event.id, event.value);
             checksum += x;
         }
         uint64_t end = queen::read_tsc_ordered();
@@ -59,10 +66,8 @@ static void run_event_loop_batch(const Event events[N], int batch) {
         latencies[i] = (end - start) / batch;
     }
 
-    print_latency_report("event_loop", batch, checksum);
+    print_latency_report(name, batch, checksum);
 }
-
-static uint64_t handle_event(const Event& event) { return event.id + 3 * event.value; }
 
 static void print_latency_report(const char* name, int batch, uint64_t checksum) {
     uint64_t mx = 0;
@@ -138,3 +143,5 @@ static void sort_latencies() {
         }
     }
 }
+
+static uint64_t kernel_embedded_entry(uint64_t id, uint64_t value) { return id + 3 * value; }
