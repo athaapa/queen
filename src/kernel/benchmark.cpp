@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 constexpr int N = 4096;
-constexpr int BATCHES[] = { 1, 4, 8, 16, 32, 64 };
+constexpr int BATCHES[] = { 64 };
 
 static uint64_t latencies[N];
 
