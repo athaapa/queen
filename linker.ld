@@ -18,6 +18,14 @@ SECTIONS
         *(.text .text.*)
     }
 
+    .queen_program : ALIGN(4K)
+    {
+        queen_program_start = .;
+        KEEP(*(.queen_program))
+    }
+    queen_program_end = ADDR(.queen_program) + ((SIZEOF(.queen_program) + 0xfff) & ~0xfff);
+    . = queen_program_end;
+
     .rodata : ALIGN(4K)
     {
         *(.rodata .rodata.*)
