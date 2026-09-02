@@ -56,6 +56,16 @@ void queen::serial::write_hex(uint64_t value) {
     }
 }
 
+void queen::serial::write_byte(uint8_t value) {
+    int i = 4;
+    while (i >= 0) {
+        uint8_t byte = (value >> i) & 0xF;
+        const char c = (byte < 10) ? (byte + '0') : ((byte - 10) + 'a');
+        write_char(c);
+        i -= 4;
+    }
+}
+
 void queen::serial::write_decimal(uint64_t value) {
     if (value == 0) {
         write("0");

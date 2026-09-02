@@ -1,4 +1,5 @@
 #include "paging.hpp"
+#include "boot_modules.hpp"
 #include "framebuffer.hpp"
 #include "kernel_main.hpp"
 #include "limine.h"
@@ -98,6 +99,17 @@ void queen::paging::init() {
         }
     }
 
+    // page the program into memory
+    const queen::boot_modules::Module& program_module = queen::boot_modules::program();
+    uint64_t module_virt = reinterpret_cast<uint64_t>(program_module.address);
+    uint64_t module_phys = module_virt - hhdm_offset;
+    uint64_t module_size = program_module.size;
+    uint64_t mapped_module_size = mathutil::align_up(module_size, PAGE_SIZE);
+
+    for (uint64_t offset = 0; offset < mapped_module_size; offset += PAGE_SIZE) {
+        map_page(module_virt + offset, module_phys + offset);
+    }
+
     queen::serial::write("paging init\n");
     queen::serial::write("kernel_start: ");
     queen::serial::write_hex(start);
@@ -129,6 +141,9 @@ void queen::paging::init() {
 }
 
 void queen::paging::activate() { switch_stack(kernel_stack_top(), pml4_phys); }
+uint64_t queen::paging::physical_to_hhdm(uint64_t physical_address) {
+    return physical_address + hhdm_offset;
+}
 
 void queen::paging::map_page(uint64_t virtual_address, uint64_t physical_address) {
     uint16_t pt_index = (virtual_address >> 12) & INDEX_MASK;

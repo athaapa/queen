@@ -6,5 +6,7 @@ namespace queen {
         void init();
         void activate();
         void map_page(uint64_t virtual_address, uint64_t physical_address);
+
+        uint64_t physical_to_hhdm(uint64_t physical_address);
     }
 }

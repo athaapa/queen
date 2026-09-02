@@ -49,10 +49,9 @@ add_executable(queen_kernel
     src/kernel/load_cr3.S
     src/kernel/mathutil.cpp
     src/kernel/kernel_main.cpp
-    src/kernel/benchmark.cpp
-    src/kernel/event_loop.cpp
     src/kernel/mathutil.cpp
     src/kernel/framebuffer.cpp
+    src/kernel/boot_modules.cpp
 )
 
 set_target_properties(queen_kernel PROPERTIES
@@ -101,6 +100,10 @@ if(XORRISO_EXECUTABLE)
         COMMAND ${CMAKE_COMMAND} -E copy ${LIMINE_DIR}/limine-bios-cd.bin ${ISO_ROOT}/
         COMMAND ${CMAKE_COMMAND} -E copy ${LIMINE_DIR}/limine-uefi-cd.bin ${ISO_ROOT}/
         COMMAND ${CMAKE_COMMAND} -E copy ${LIMINE_DIR}/BOOTX64.EFI ${ISO_ROOT}/EFI/BOOT/BOOTX64.EFI
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${ISO_ROOT}/program
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_BINARY_DIR}/program/program.bin
+                ${ISO_ROOT}/program/program.bin
         COMMAND ${XORRISO_EXECUTABLE}
             -as mkisofs
             -b limine-bios-cd.bin

@@ -1,3 +1,4 @@
+#include "boot_modules.hpp"
 #include "framebuffer.hpp"
 #include "gdt.hpp"
 #include "idt.hpp"
@@ -13,6 +14,7 @@ extern "C" void kernel_main() {
     queen::pic::init();
     queen::memory::init();
     queen::framebuffer::init();
+    queen::boot_modules::capture();
     queen::paging::init();
 
     queen::serial::write("queen booted\n");

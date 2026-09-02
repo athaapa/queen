@@ -17,6 +17,9 @@ namespace queen {
         // Writes value in hexadecimal to COM1
         void write_hex(uint64_t value);
 
+        // Writes byte to COM1
+        void write_byte(uint8_t value);
+
         // Writes value in decimal to COM1
         void write_decimal(uint64_t value);
     }
